@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
+import ChannelList, { Channel } from './ChannelList';
 import { Message } from '../types';
 import * as sendbirdService from '../services/sendbirdService';
 import './ChatContainer.css';
@@ -14,6 +15,8 @@ const ChatContainer: React.FC = () => {
   const [autoSyncing, setAutoSyncing] = useState<boolean>(false);
   const [nickname, setNickname] = useState<string>('');
   const [showNicknameModal, setShowNicknameModal] = useState<boolean>(false);
+  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+  const [showChannelList, setShowChannelList] = useState<boolean>(true);
 
   // Проверка на наличие сохраненного имени пользователя
   useEffect(() => {
@@ -35,6 +38,27 @@ const ChatContainer: React.FC = () => {
     }
   };
 
+  // Обработчик выбора канала
+  const handleChannelSelect = async (channel: Channel) => {
+    setLoading(true);
+    setError(null);
+    setMessages([]);
+    
+    try {
+      await sendbirdService.switchChannel(channel.url);
+      setSelectedChannel(channel);
+      
+      // Получение истории сообщений для выбранного канала
+      const messages = await sendbirdService.getMessages();
+      setMessages(messages);
+    } catch (err: any) {
+      console.error('Ошибка при переключении канала:', err);
+      setError('Не удалось загрузить сообщения для выбранного чата. ' + (err.message || ''));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Загрузка истории сообщений
   useEffect(() => {
     const fetchMessages = async () => {
@@ -46,9 +70,15 @@ const ChatContainer: React.FC = () => {
         await sendbirdService.initSendbird();
         setConnected(true);
         
-        // Получение истории сообщений
-        const messages = await sendbirdService.getMessages();
-        setMessages(messages);
+        // Получение списка каналов и выбор первого канала по умолчанию
+        const channels = await sendbirdService.getChannelList();
+        if (channels.length > 0 && !selectedChannel) {
+          await handleChannelSelect(channels[0]);
+        } else {
+          // Получение истории сообщений
+          const messages = await sendbirdService.getMessages();
+          setMessages(messages);
+        }
         
         // Подписываемся на обновления канала
         await sendbirdService.subscribeToChannelUpdates();
@@ -168,6 +198,11 @@ const ChatContainer: React.FC = () => {
     }
   };
 
+  // Переключение отображения списка каналов
+  const toggleChannelList = () => {
+    setShowChannelList(prev => !prev);
+  };
+
   // Модальное окно для ввода имени пользователя
   const renderNicknameModal = () => {
     if (!showNicknameModal) return null;
@@ -198,61 +233,51 @@ const ChatContainer: React.FC = () => {
   };
 
   return (
-    <section className="chat-container">
+    <div className="chat-container">
       {renderNicknameModal()}
       
-      <h1>Чат в реальном времени с SendBird</h1>
-      
-      {error && (
-        <div className="error-message">
-          <p>{error}</p>
-          <button onClick={() => setError(null)}>Закрыть</button>
-        </div>
-      )}
-      
-      {loading ? (
-        <div className="loading-indicator">
-          <p>Подключение к SendBird...</p>
-        </div>
-      ) : (
-        <>
-          {autoSyncing && (
-            <div className="auto-sync-indicator">
-              <span>Получены новые сообщения</span>
-            </div>
-          )}
-          
-          <MessageList messages={messages} />
-          <MessageInput onSendMessage={handleSendMessage} />
-          
-          {connected && (
-            <div className="connection-status connected">
-              <span>Соединение установлено</span>
-              <button 
-                onClick={handleSyncMessages} 
-                disabled={syncing}
-                className={`sync-button ${syncing ? 'syncing' : ''}`}
-              >
-                {syncing ? 'Синхронизация...' : 'Синхронизировать'}
-              </button>
-              <button 
-                onClick={() => setShowNicknameModal(true)}
-                className="change-name-button"
-              >
-                Изменить имя
+      <div className="chat-layout">
+        {showChannelList && (
+          <ChannelList 
+            onChannelSelect={handleChannelSelect} 
+            selectedChannelUrl={selectedChannel?.url}
+          />
+        )}
+        
+        <div className="chat-main">
+          <div className="chat-header">
+            <button className="toggle-channel-list" onClick={toggleChannelList}>
+              {showChannelList ? '←' : '→'}
+            </button>
+            <h2 className="channel-title">
+              {selectedChannel ? selectedChannel.name : 'Чат'}
+              {selectedChannel && <span className="channel-members-count"> ({selectedChannel.memberCount})</span>}
+            </h2>
+            
+            <div className="chat-actions">
+              <button className="sync-button" onClick={handleSyncMessages} disabled={syncing || loading}>
+                {syncing ? "Синхронизация..." : "Обновить"}
               </button>
             </div>
-          )}
+          </div>
           
-          {!connected && !loading && !showNicknameModal && (
-            <div className="connection-status disconnected">
-              <span>Соединение разорвано</span>
-              <button onClick={() => window.location.reload()}>Переподключиться</button>
-            </div>
-          )}
-        </>
-      )}
-    </section>
+          <div className="chat-content">
+            {error && <div className="error-message">{error}</div>}
+            
+            <MessageList 
+              messages={messages} 
+              loading={loading} 
+              autoSyncing={autoSyncing}
+            />
+            
+            <MessageInput 
+              onSendMessage={handleSendMessage} 
+              disabled={!connected || loading || !selectedChannel}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

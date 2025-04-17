@@ -1,5 +1,6 @@
 import SendBird from 'sendbird';
 import { Message } from '../types';
+import { Channel } from '../components/ChannelList';
 
 // Инициализация SendBird SDK
 const sb = new SendBird({ appId: 'D895A94C-429F-4EB3-A361-B91CF467BD94' });
@@ -399,4 +400,94 @@ export const startAutoSync = (onNewMessages: (messages: Message[]) => void): (()
   return () => {
     clearInterval(intervalId);
   };
+};
+
+// Получение списка всех доступных каналов
+export const getChannelList = async (): Promise<Channel[]> => {
+  try {
+    if (!sb.currentUser) {
+      await initSendbird();
+    }
+    
+    // Создание запроса на получение списка каналов
+    const channelListQuery = sb.GroupChannel.createMyGroupChannelListQuery();
+    channelListQuery.includeEmpty = true;
+    channelListQuery.limit = 100;
+    
+    // Получение каналов
+    const channels = await channelListQuery.next();
+    
+    // Преобразование каналов SendBird в формат нашего приложения
+    return channels.map(channel => {
+      let lastMessageText = '';
+      
+      // Проверяем тип последнего сообщения и получаем его текст
+      if (channel.lastMessage) {
+        if (channel.lastMessage.messageType === 'user') {
+          lastMessageText = (channel.lastMessage as SendBird.UserMessage).message || '';
+        } else if (channel.lastMessage.messageType === 'admin') {
+          lastMessageText = (channel.lastMessage as SendBird.AdminMessage).message || '';
+        }
+      }
+      
+      return {
+        url: channel.url,
+        name: channel.name,
+        memberCount: channel.memberCount,
+        unreadMessageCount: channel.unreadMessageCount,
+        lastMessage: lastMessageText
+      };
+    });
+  } catch (error) {
+    console.error('Ошибка при получении списка каналов:', error);
+    throw error;
+  }
+};
+
+// Создание нового канала
+export const createChannel = async (channelName: string): Promise<Channel> => {
+  try {
+    if (!sb.currentUser) {
+      await initSendbird();
+    }
+    
+    // Создание параметров для нового канала
+    const params = new sb.GroupChannelParams();
+    params.name = channelName;
+    params.isPublic = true;
+    params.operatorUserIds = [USER_ID];
+    
+    // Создание нового канала
+    const newChannel = await sb.GroupChannel.createChannel(params);
+    
+    // Преобразование канала SendBird в формат нашего приложения
+    return {
+      url: newChannel.url,
+      name: newChannel.name,
+      memberCount: newChannel.memberCount,
+      unreadMessageCount: newChannel.unreadMessageCount,
+      lastMessage: '' // Новый канал не имеет сообщений
+    };
+  } catch (error) {
+    console.error('Ошибка при создании канала:', error);
+    throw error;
+  }
+};
+
+// Переключение между каналами
+export const switchChannel = async (channelUrl: string): Promise<void> => {
+  try {
+    if (!sb.currentUser) {
+      await initSendbird();
+    }
+    
+    // Получаем канал по его URL
+    currentChannel = await sb.GroupChannel.getChannel(channelUrl);
+    
+    // Отмечаем канал как прочитанный
+    await currentChannel.markAsRead();
+  } catch (error) {
+    console.error('Ошибка при переключении канала:', error);
+    throw error;
+  }
 }; 

@@ -3,9 +3,10 @@ import './MessageInput.css';
 
 interface MessageInputProps {
   onSendMessage: (text: string) => void;
+  disabled?: boolean;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
+const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, disabled = false }) => {
   const [message, setMessage] = useState<string>('');
   const [isValid, setIsValid] = useState<boolean>(false);
   const [isSending, setIsSending] = useState<boolean>(false);
@@ -21,7 +22,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    if (!isValid || isSending) return;
+    if (!isValid || isSending || disabled) return;
     
     setIsSending(true);
     
@@ -40,7 +41,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (isValid && !isSending) {
+      if (isValid && !isSending && !disabled) {
         handleSubmit(e);
       }
     }
@@ -54,13 +55,13 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
           value={message}
           onChange={handleMessageChange}
           onKeyDown={handleKeyDown}
-          placeholder="Введите сообщение..."
-          disabled={isSending}
+          placeholder={disabled ? "Выберите чат для отправки сообщений..." : "Введите сообщение..."}
+          disabled={isSending || disabled}
         />
         <button 
           type="submit" 
-          className={`send-button ${isValid ? 'active' : 'disabled'}`}
-          disabled={!isValid || isSending}
+          className={`send-button ${isValid && !disabled ? 'active' : 'disabled'}`}
+          disabled={!isValid || isSending || disabled}
         >
           {isSending ? (
             <span className="sending-indicator"></span>
