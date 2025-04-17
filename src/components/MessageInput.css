@@ -1,0 +1,118 @@
+.message-input-form {
+  padding: 0.8rem;
+  background-color: #f8f8f8;
+  border-top: 1px solid #e0e0e0;
+}
+
+.message-input-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.message-input {
+  flex: 1;
+  min-height: 48px;
+  max-height: 120px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 24px;
+  font-family: inherit;
+  font-size: 1rem;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  overflow-y: auto;
+}
+
+.message-input:focus {
+  border-color: #4a6fa5;
+  box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+}
+
+.message-input:disabled {
+  background-color: #f3f3f3;
+  color: #888;
+}
+
+.send-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.send-button.active {
+  background-color: #4a6fa5;
+  color: white;
+}
+
+.send-button.disabled {
+  background-color: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.send-button.active:hover {
+  background-color: #3d5d8a;
+  transform: scale(1.05);
+}
+
+.send-icon {
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.sending-indicator {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.input-help-text {
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.input-help-text p {
+  font-size: 0.7rem;
+  color: #777;
+  margin: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Анимация для кнопки при отправке */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 480px) {
+  .message-input {
+    padding: 0.6rem 0.8rem;
+    min-height: 40px;
+    font-size: 0.9rem;
+  }
+  
+  .send-button {
+    width: 40px;
+    height: 40px;
+  }
+} 
