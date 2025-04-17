@@ -241,14 +241,16 @@ const ChatContainer: React.FC = () => {
           <ChannelList 
             onChannelSelect={handleChannelSelect} 
             selectedChannelUrl={selectedChannel?.url}
+            onClose={toggleChannelList}
           />
         )}
         
         <div className="chat-main">
           <div className="chat-header">
-            <button className="toggle-channel-list" onClick={toggleChannelList}>
-              {showChannelList ? '←' : '→'}
+            <button className="toggle-channel-list" onClick={toggleChannelList} title={showChannelList ? "Скрыть список чатов" : "Показать список чатов"}>
+              {showChannelList ? '✕' : '☰'}
             </button>
+            
             <h2 className="channel-title">
               {selectedChannel ? selectedChannel.name : 'Чат'}
               {selectedChannel && <span className="channel-members-count"> ({selectedChannel.memberCount})</span>}

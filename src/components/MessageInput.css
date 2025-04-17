@@ -2,6 +2,8 @@
   padding: 0.8rem;
   background-color: #f8f8f8;
   border-top: 1px solid #e0e0e0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .message-input-container {
@@ -105,14 +107,36 @@
 
 /* Медиа-запросы для адаптивности */
 @media (max-width: 480px) {
+  .message-input-form {
+    padding: 0.5rem;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background-color: #f8f8f8;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .message-input-container {
+    margin-bottom: 0;
+    gap: 0.3rem;
+  }
+  
   .message-input {
     padding: 0.6rem 0.8rem;
     min-height: 40px;
+    max-height: 80px; /* Ограничение высоты на мобильных */
     font-size: 0.9rem;
+    border-radius: 20px;
   }
   
   .send-button {
     width: 40px;
     height: 40px;
+  }
+  
+  .input-help-text {
+    display: none; /* Скрываем подсказку на мобильных для экономии места */
   }
 } 

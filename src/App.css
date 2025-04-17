@@ -4,18 +4,33 @@
   padding: 0;
 }
 
+html, body {
+  height: 100%; 
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Предотвращаем скролл на мобильных */
+}
+
 body {
   font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #e8ecef;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .App {
   min-height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   color: #333;
+  overflow: hidden;
 }
 
 .App-logo {
@@ -65,4 +80,23 @@ body {
 
 .fade-in {
   animation: fadeIn 0.5s ease;
+}
+
+/* Мобильные адаптации */
+@media (max-width: 480px) {
+  body, html, #root, .App {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
+/* Для iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  html, body {
+    height: -webkit-fill-available;
+  }
+  
+  .App {
+    min-height: -webkit-fill-available;
+  }
 }
