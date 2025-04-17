@@ -2,7 +2,6 @@ import SendBird from 'sendbird';
 import { Message } from '../types';
 import { Channel } from '../components/ChannelList';
 
-// Инициализация SendBird SDK
 const sb = new SendBird({ appId: 'D895A94C-429F-4EB3-A361-B91CF467BD94' });
 
 // Получение сохраненного ID пользователя или создание нового
